@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bcryptjs = require("bcryptjs"); //encriptar password
 
 const UserSchema = new mongoose.Schema({
   username: {
@@ -22,6 +23,17 @@ const UserSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpire: Date,
+});
+
+//encriptar o password antes do user ser "salvo / criado"
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    next();
+  }
+
+  const salt = await bcryptjs.genSalt(10);
+  this.password = await bcryptjs.hash(this.password, salt); //change the password with salt
+  next();
 });
 
 const User = mongoose.model("User", UserSchema);
